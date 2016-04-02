@@ -200,18 +200,18 @@ struct SQLDump: public Callback
             "sqlite3 /run/shm/blockchain.sqlite < blockchain.sql\n"
             "echo done\n"
             "echo\n"
-            "rm -f blockchain.sql\n"
+            // "rm -f blockchain.sql\n"
             "\n"
             "for i in blocks tx txin txout\n"
             "do\n"
             "    echo Importing table $i ...\n"
             "    echo \".import $i.txt $i\" | sqlite3 /run/shm/blockchain.sqlite\n"
             "    echo done\n"
-            "    rm -f $i.txt\n"
+            // "    rm -f $i.txt\n"
             "    echo\n"
             "done\n"
             "mv -f /run/shm/blockchain.sqlite ../blockchain/blockchain.sqlite\n"
-            "rm -f blockchain.sh\n"
+            // "rm -f blockchain.sh\n"
             "\n"
         );
         fclose(bashFile);
@@ -234,6 +234,8 @@ struct SQLDump: public Callback
         LOAD(uint32_t, blkTime, p);
 
         blkID = b->height - 1;
+
+        printf("startBlock: blkID=%" PRIu64 " cutoffBlock=%" PRIu64 "\n", blkID, cutoffBlock);
 
         if (blkID >= cutoffBlock)
         {

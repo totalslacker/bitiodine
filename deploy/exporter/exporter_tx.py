@@ -53,6 +53,6 @@ with open(f + ".dot", 'w') as f:
 
 	for edge in edges:
 		(u, v, d) = edge
-		f.write('"%s" -> "%s" [tx_hash=%s];\n' % (u, v, d['tx_hash']))
+		f.write('"%s" -> "%s" [tx_hash="%s"];\n' % (u, v, d['tx_hash']))
 
 	f.write('};\n')

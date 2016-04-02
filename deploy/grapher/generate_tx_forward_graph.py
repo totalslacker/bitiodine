@@ -50,10 +50,11 @@ def dump_transactions(G, tx_id, tx_count, count):
   for out in out_res:
     address = out[0]
     value = out[1] / 100000000.0
+    txout_id = out[2]
     print("out address=%s value=%f" % (address, value))
     if out not in in_addr:
       out_addr.add(address)
-    out_values[address] = value
+    out_values[address] = {'value' : value, 'txout_id' : txout_id}
 
   for in_address in in_addr:
     G.add_node(in_address)
@@ -66,15 +67,25 @@ def dump_transactions(G, tx_id, tx_count, count):
   for in_address in in_addr:
     print("in address=%s" % (in_address))
     for out_address in out_addr:
-      value = out_values[out_address]
+      value = out_values[out_address]['value']
       print("out address=%s" % (out_address))
       print("in_address=%s value=%d" % (in_address, value))
-      G.add_edge(in_address, out_address, tx_id=tx_id, tx_hash=tx_hash, tx_value=value)
-      tx_count += 1
-      print("Edge: %s -> %s tx=%s" % (in_address, out_address, tx_hash))
+      if in_address != out_address:
+        G.add_edge(in_address, out_address, tx_id=tx_id, tx_hash=tx_hash, tx_value=value)
+        tx_count += 1
+        print("Edge: %s -> %s tx=%s" % (in_address, out_address, tx_hash))
 
   # iterate through the outputs and dump all of them (plus their children depending on count)
-  return dump_transactions(G, tx_id, tx_count, count - 1)
+  for out_address in out_addr:
+      txout_id = out_values[out_address]['txout_id']
+      print("%s: txout_id=%d" % (out_address, txout_id))
+      in_res = db.query("select txin_id, tx_id from txin where txout_id=?", (txout_id,))
+      print('\tin_res=', in_res)
+      if len(in_res) > 0:
+        print("\t txin_id=%d tx_id=%d" % (in_res[0][0], in_res[0][1]))
+        tx_count = dump_transactions(G, in_res[0][1], tx_count, count - 1)
+
+  return tx_count
 
 
 ###
@@ -83,7 +94,7 @@ db = SQLiteWrapper('../blockchain/blockchain.sqlite')
 
 parser = argparse.ArgumentParser(description='Generate transaction graph based on transactions on a time interval desired')
 parser.add_argument("--tx", dest="base_tx", default="F4184FC596403B9D638783CF57ADFE4C75C605F6356FBC91338530E9831E9E16")
-parser.add_argument("--count", dest="count", default=1)
+parser.add_argument("--count", dest="count", default=1, type=int)
 parser.add_argument("--out-filename", dest="output_filename", default="tx_graph")
 args = parser.parse_args()
 

@@ -27,7 +27,7 @@ tx_hash_query = """
 """
 out_query_addr_with_value = """
 	  SELECT
-			  txout.address, txout.txout_value
+			  txout.address, txout.txout_value, txout.txout_id
 			  FROM txout
 			  LEFT JOIN txin ON (txin.txout_id = txout.txout_id)
 			 WHERE txout.tx_id = ?

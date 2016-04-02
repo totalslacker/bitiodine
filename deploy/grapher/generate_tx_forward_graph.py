@@ -47,6 +47,7 @@ def dump_transactions(G, tx_id, tx_count, count):
     in_values[address] = value
 
   # OUT  
+  out_sum = 0.0
   for out in out_res:
     address = out[0]
     value = out[1] / 100000000.0
@@ -55,25 +56,24 @@ def dump_transactions(G, tx_id, tx_count, count):
     if out not in in_addr:
       out_addr.add(address)
     out_values[address] = {'value' : value, 'txout_id' : txout_id}
+    out_sum += value;
 
   for in_address in in_addr:
     G.add_node(in_address)
-    print("In Node=%s" % (in_address))
 
   for out_address in out_addr:
     G.add_node(out_address)
-    print("Out Node=%s" % (out_address))
 
   for in_address in in_addr:
-    print("in address=%s" % (in_address))
     for out_address in out_addr:
-      value = out_values[out_address]['value']
+      out_value = out_values[out_address]['value']
+      in_value = in_values[in_address]
+      value = in_value * out_value / out_sum
       print("out address=%s" % (out_address))
-      print("in_address=%s value=%d" % (in_address, value))
       if in_address != out_address:
         G.add_edge(in_address, out_address, tx_id=tx_id, tx_hash=tx_hash, tx_value=value)
         tx_count += 1
-        print("Edge: %s -> %s tx=%s" % (in_address, out_address, tx_hash))
+        print("%s -> %s value=%d" % (in_address, out_address, value))
 
   # iterate through the outputs and dump all of them (plus their children depending on count)
   for out_address in out_addr:

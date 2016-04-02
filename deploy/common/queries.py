@@ -5,6 +5,13 @@ in_query_addr = """
 			  LEFT JOIN txout ON (txout.txout_id = txin.txout_id)
 			 WHERE txin.tx_id = ?
 """
+in_query_addr_with_value = """
+	  SELECT
+			  txout.address, txout.txout_value
+			  FROM txin
+			  LEFT JOIN txout ON (txout.txout_id = txin.txout_id)
+			 WHERE txin.tx_id = ?
+"""
 out_query_addr = """
 	  SELECT
 			  txout.address
